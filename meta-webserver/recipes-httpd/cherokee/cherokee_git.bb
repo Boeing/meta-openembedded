@@ -1,5 +1,4 @@
-SUMMARY = "Cherokee Web Server fast and secure"
-SUMMARY:cget = "Small downloader based in the Cherokee client library"
+SUMMARY = "Cherokee Web Server - Fast and Secure"
 HOMEPAGE = "http://www.cherokee-project.com/"
 SECTION = "network"
 LICENSE = "GPL-2.0-only"
@@ -8,7 +7,8 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f"
 DEPENDS = "unzip-native libpcre openssl mysql5 ${@bb.utils.contains('DISTRO_FEATURES', 'pam', 'libpam', '', d)}"
 
 SRCREV = "9a75e65b876bcc376cb6b379dca1f7ce4a055c59"
-PV = "1.2.104+git"
+PV = "1.2.104+git${SRCPV}"
+
 SRC_URI = "git://github.com/cherokee/webserver;branch=master;protocol=https \
            file://cherokee.init \
            file://cherokee.service \
@@ -35,32 +35,31 @@ EXTRA_OECONF = "--disable-static \
 "
 
 do_install:append () {
-    install -m 0755 -d ${D}${sysconfdir}/init.d
+    install -d ${D}${sysconfdir}/init.d
     install -m 755 ${WORKDIR}/cherokee.init ${D}${sysconfdir}/init.d/cherokee
-
-    # clean up .la files for plugins
+    
+    # Clean up .la files for plugins
     rm -f ${D}${libdir}/cherokee/*.la
-
+    
     install -d ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/cherokee.service ${D}${systemd_unitdir}/system
+    
+    # Remove unnecessary directories
     rmdir "${D}${localstatedir}/run"
     rmdir --ignore-fail-on-non-empty "${D}${localstatedir}"
 }
 
-# Put -dev near the front so we can move the .la files into it with a wildcard
 PACKAGES =+ "libcherokee-server libcherokee-client libcherokee-base cget"
 
 FILES:cget = "${bindir}/cget"
 FILES:libcherokee-server = "${libdir}/libcherokee-server${SOLIBS}"
 FILES:libcherokee-client = "${libdir}/libcherokee-client${SOLIBS}"
 FILES:libcherokee-base = "${libdir}/libcherokee-base${SOLIBS}"
-
-# Pack the htdocs
 FILES:${PN} += "${localstatedir}/www/cherokee"
 
 CONFFILES:${PN} = " \
-                   ${sysconfdir}/cherokee/cherokee.conf \
-                   ${sysconfdir}/init.d/cherokee \
+    ${sysconfdir}/cherokee/cherokee.conf \
+    ${sysconfdir}/init.d/cherokee \
 "
 
 INITSCRIPT_NAME = "cherokee"
@@ -71,9 +70,9 @@ RREPLACES:${PN} += "${PN}-systemd"
 RCONFLICTS:${PN} += "${PN}-systemd"
 SYSTEMD_SERVICE:${PN} = "cherokee.service"
 
+CVE_PRODUCT += "cherokee_web_server"
+
 python() {
     if 'meta-python2' not in d.getVar('BBFILE_COLLECTIONS').split():
         raise bb.parse.SkipRecipe('Requires meta-python2 to be present.')
 }
-
-CVE_PRODUCT += "cherokee_web_server"
