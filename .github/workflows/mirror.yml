@@ -1,0 +1,23 @@
+#
+# Based on https://github.com/marketplace/actions/mirror-to-github
+#
+name: 'mirror'
+on:
+  push:
+    branches:
+        - __mirror
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    name: mirror
+    steps:
+      - name: mirror
+        id: mirror
+        uses: bridgelightcloud/github-mirror-action@v3
+        with:
+          origin: 'git://git.openembedded.org/meta-openembedded'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
