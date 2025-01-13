@@ -26,3 +26,5 @@ do_install:append() {
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
+
+SKIP_RECIPE[vsomeip] ?= "needs ccpprest which needs websocket does work with boost >= 1.87"
